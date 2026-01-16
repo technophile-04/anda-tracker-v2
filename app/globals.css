@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  background-image:
+    radial-gradient(circle at 20% 20%, #fff2bf 0%, transparent 45%),
+    radial-gradient(circle at 80% 0%, #ffd7d2 0%, transparent 50%),
+    linear-gradient(180deg, #fff8dc 0%, #ffe3b5 100%);
+  background-attachment: fixed;
+  font-family:
+    "Comic Sans MS", "Comic Sans", "Chalkboard", "Trebuchet MS", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-image:
+      radial-gradient(
+        circle at 20% 20%,
+        rgba(251, 191, 36, 0.12) 0%,
+        transparent 45%
+      ),
+      radial-gradient(
+        circle at 80% 0%,
+        rgba(248, 113, 113, 0.18) 0%,
+        transparent 50%
+      ),
+      linear-gradient(180deg, #0f172a 0%, #1f2937 100%);
+  }
+}
