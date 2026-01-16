@@ -1,5 +1,6 @@
 "use client";
 
+import { DashboardLoadingSkeleton } from "@/components/Loading";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import Link from "next/link";
@@ -208,7 +209,7 @@ export default function Home() {
             </form>
           </section>
         ) : user === undefined ? (
-          <div className="text-sm text-slate-700">Loading your profile...</div>
+          <DashboardLoadingSkeleton />
         ) : (
           <section className="flex flex-col gap-6">
             <div className={`${cardBaseClass} bg-white flex flex-col gap-3`}>
@@ -236,7 +237,11 @@ export default function Home() {
                 </p>
                 <div className="mt-4 flex flex-col gap-3">
                   {rooms === undefined ? (
-                    <p className="text-sm text-slate-600">Loading rooms...</p>
+                    <>
+                      <div className="h-20 w-full rounded-2xl bg-slate-100 animate-pulse border-2 border-slate-100" />
+                      <div className="h-20 w-full rounded-2xl bg-slate-100 animate-pulse border-2 border-slate-100" />
+                      <div className="h-20 w-full rounded-2xl bg-slate-100 animate-pulse border-2 border-slate-100" />
+                    </>
                   ) : rooms.length === 0 ? (
                     <p className="text-sm text-slate-600">
                       Abhi koi room nahi. Ek bana ke shuru karo.

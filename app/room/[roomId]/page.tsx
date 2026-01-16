@@ -1,5 +1,6 @@
 "use client";
 
+import { RoomLoadingSkeleton } from "@/components/Loading";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import Link from "next/link";
@@ -232,13 +233,7 @@ export default function RoomPage() {
   }
 
   if (roomData === undefined) {
-    return (
-      <main className="min-h-screen text-slate-900">
-        <div className="max-w-4xl mx-auto p-6">
-          <p className="text-sm text-slate-700">Loading room...</p>
-        </div>
-      </main>
-    );
+    return <RoomLoadingSkeleton />;
   }
 
   if (roomData === null) {
