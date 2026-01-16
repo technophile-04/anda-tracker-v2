@@ -3,6 +3,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import type { Id } from "../convex/_generated/dataModel";
@@ -12,11 +13,13 @@ const STORAGE_KEY = "eggtracker:userId";
 const cardBaseClass =
   "rounded-3xl border-2 border-slate-900 p-6 shadow-[0_6px_0_0_rgba(15,23,42,0.25)]";
 const primaryButtonClass =
-  "rounded-full border-2 border-slate-900 bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-900 shadow-[0_4px_0_0_rgba(15,23,42,0.25)] transition hover:-translate-y-0.5 hover:bg-amber-300 active:translate-y-0.5 active:shadow-none";
+  "rounded-full border-2 border-slate-900 bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-900 shadow-[0_4px_0_0_rgba(15,23,42,0.25)] transition hover:-translate-y-0.5 hover:bg-amber-300 active:translate-y-0.5 active:shadow-none disabled:cursor-not-allowed disabled:opacity-70 disabled:shadow-none";
 const secondaryButtonClass =
-  "rounded-full border-2 border-slate-900 bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-[0_4px_0_0_rgba(15,23,42,0.2)] transition hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none";
+  "rounded-full border-2 border-slate-900 bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-[0_4px_0_0_rgba(15,23,42,0.2)] transition hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none disabled:cursor-not-allowed disabled:opacity-70 disabled:shadow-none";
 const inputClass =
   "w-full rounded-full border-2 border-slate-900 bg-white px-4 py-2 text-sm shadow-[inset_0_2px_0_0_rgba(15,23,42,0.12)] focus:outline-none focus:ring-2 focus:ring-amber-400";
+const spinnerClass =
+  "h-4 w-4 animate-spin rounded-full border-2 border-slate-900 border-t-transparent";
 
 function useStoredUserId() {
   const [userId, setUserIdState] = useState<Id<"users"> | null>(() => {
@@ -78,6 +81,9 @@ export default function Home() {
   const [roomName, setRoomName] = useState("");
   const [joinInput, setJoinInput] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [isCreatingRoom, setIsCreatingRoom] = useState(false);
+  const [isJoiningRoom, setIsJoiningRoom] = useState(false);
 
   useEffect(() => {
     if (userId && user === null) {
@@ -87,39 +93,52 @@ export default function Home() {
 
   const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isSigningIn) {
+      return;
+    }
     setError(null);
+    setIsSigningIn(true);
     try {
       const newUserId = await createUser({ name: nameInput });
       setUserId(newUserId);
       setNameInput("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to sign in.");
+    } finally {
+      setIsSigningIn(false);
     }
   };
 
   const handleCreateRoom = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!userId) {
+    if (!userId || isCreatingRoom) {
       return;
     }
     setError(null);
+    setIsCreatingRoom(true);
     try {
       const newRoomId = await createRoom({ name: roomName, userId });
       setRoomName("");
       router.push(`/room/${newRoomId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not create room.");
+    } finally {
+      setIsCreatingRoom(false);
     }
   };
 
   const handleJoin = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isJoiningRoom) {
+      return;
+    }
     setError(null);
     const roomId = parseRoomId(joinInput);
     if (!roomId) {
       setError("Paste a room link or id to join.");
       return;
     }
+    setIsJoiningRoom(true);
     setJoinInput("");
     router.push(`/room/${roomId}`);
   };
@@ -127,17 +146,28 @@ export default function Home() {
   return (
     <main className="min-h-screen text-slate-900">
       <div className="max-w-4xl mx-auto p-6 flex flex-col gap-10">
-        <header className={`${cardBaseClass} bg-amber-100`}>
-          <p className="text-sm uppercase tracking-[0.2em] text-amber-700">
-            Egg Crate Tracker
-          </p>
-          <h1 className="text-3xl font-semibold text-slate-900">
-            Share a tray, mark your eggs, stay even.
-          </h1>
-          <p className="text-slate-700">
-            Create a room, invite your friend, and track who eats each of the 30
-            eggs in the crate.
-          </p>
+        <header
+          className={`${cardBaseClass} bg-amber-100 flex flex-col items-center text-center gap-6`}
+        >
+          <Image
+            src="/logo.svg"
+            alt="Anda Tacker Logo"
+            width={100}
+            height={100}
+            className="rounded-2xl shadow-sm"
+          />
+          <div className="flex flex-col gap-2">
+            <p className="text-sm uppercase tracking-[0.2em] text-amber-700">
+              Anda Tacker
+            </p>
+            <h1 className="text-3xl font-semibold text-slate-900">
+              Anda Tacker — ande ginne ka official audit.
+            </h1>
+            <p className="text-slate-700 max-w-lg mx-auto">
+              Room banao, doston/flatmates ko invite karo, aur dekho kisne kitne
+              ande uda liye. "Maine nahi khaya" ab data me hai.
+            </p>
+          </div>
         </header>
 
         {error ? (
@@ -148,10 +178,10 @@ export default function Home() {
 
         {!userId ? (
           <section className={`${cardBaseClass} bg-white`}>
-            <h2 className="text-xl font-semibold">Sign in with a name</h2>
+            <h2 className="text-xl font-semibold">Naam daalo, ande ginne do</h2>
             <p className="text-sm text-slate-600 mt-1">
-              We keep it lightweight. Your name is saved locally for quick
-              access.
+              Bas naam chahiye, Aadhaar nahi. Naam locally save hota hai — "main
+              kaun?" ka drama band.
             </p>
             <form className="mt-4 flex flex-col gap-3" onSubmit={handleLogin}>
               <input
@@ -160,8 +190,20 @@ export default function Home() {
                 placeholder="Your name"
                 className={inputClass}
               />
-              <button type="submit" className={primaryButtonClass}>
-                Continue
+              <button
+                type="submit"
+                className={primaryButtonClass}
+                disabled={isSigningIn}
+                aria-busy={isSigningIn}
+              >
+                {isSigningIn ? (
+                  <span className="inline-flex items-center gap-2">
+                    <span className={spinnerClass} aria-hidden="true" />
+                    Signing in...
+                  </span>
+                ) : (
+                  "Continue"
+                )}
               </button>
             </form>
           </section>
@@ -176,23 +218,28 @@ export default function Home() {
                 </p>
                 <p className="text-lg font-semibold">{user?.name}</p>
               </div>
-              <button onClick={clearUserId} className={secondaryButtonClass}>
-                Sign out
-              </button>
+              <p className="text-xs text-amber-700">
+                Sign out karoge to account gaya — wapas nahi milega.
+              </p>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
               <div className={`${cardBaseClass} bg-white`}>
-                <h3 className="text-lg font-semibold">Your rooms</h3>
-                <p className="text-sm text-slate-600 mt-1">
-                  Jump back into a tray you already share.
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-amber-100 rounded-xl">
+                    <Image src="/crate.svg" alt="" width={24} height={24} />
+                  </div>
+                  <h3 className="text-lg font-semibold">Your rooms</h3>
+                </div>
+                <p className="text-sm text-slate-600">
+                  Apne anda gang me wapas ghuso.
                 </p>
                 <div className="mt-4 flex flex-col gap-3">
                   {rooms === undefined ? (
                     <p className="text-sm text-slate-600">Loading rooms...</p>
                   ) : rooms.length === 0 ? (
                     <p className="text-sm text-slate-600">
-                      No rooms yet. Create one to get started.
+                      Abhi koi room nahi. Ek bana ke shuru karo.
                     </p>
                   ) : (
                     rooms.map((room) => (
@@ -219,9 +266,14 @@ export default function Home() {
 
               <div className={`${cardBaseClass} bg-white flex flex-col gap-6`}>
                 <div>
-                  <h3 className="text-lg font-semibold">Create a room</h3>
-                  <p className="text-sm text-slate-600 mt-1">
-                    Start a new tray and invite your partner.
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="p-2 bg-amber-100 rounded-xl">
+                      <Image src="/egg.svg" alt="" width={24} height={24} />
+                    </div>
+                    <h3 className="text-lg font-semibold">Room banao</h3>
+                  </div>
+                  <p className="text-sm text-slate-600">
+                    Naya tray banao aur doston/flatmates ko bulao.
                   </p>
                   <form
                     className="mt-4 flex flex-col gap-3"
@@ -233,16 +285,28 @@ export default function Home() {
                       placeholder="Room name"
                       className={inputClass}
                     />
-                    <button type="submit" className={primaryButtonClass}>
-                      Create room
+                    <button
+                      type="submit"
+                      className={primaryButtonClass}
+                      disabled={isCreatingRoom}
+                      aria-busy={isCreatingRoom}
+                    >
+                      {isCreatingRoom ? (
+                        <span className="inline-flex items-center gap-2">
+                          <span className={spinnerClass} aria-hidden="true" />
+                          Creating...
+                        </span>
+                      ) : (
+                        "Create room"
+                      )}
                     </button>
                   </form>
                 </div>
 
                 <div className="border-t-2 border-dashed border-slate-200 pt-6">
-                  <h3 className="text-lg font-semibold">Join with a link</h3>
+                  <h3 className="text-lg font-semibold">Link se ghuso</h3>
                   <p className="text-sm text-slate-600 mt-1">
-                    Paste an invite link or room id to join quickly.
+                    Invite link ya room id chipkao, jaldi join karo.
                   </p>
                   <form
                     className="mt-4 flex flex-col gap-3"
@@ -254,8 +318,20 @@ export default function Home() {
                       placeholder="https://.../room/abc123"
                       className={inputClass}
                     />
-                    <button type="submit" className={secondaryButtonClass}>
-                      Join room
+                    <button
+                      type="submit"
+                      className={secondaryButtonClass}
+                      disabled={isJoiningRoom}
+                      aria-busy={isJoiningRoom}
+                    >
+                      {isJoiningRoom ? (
+                        <span className="inline-flex items-center gap-2">
+                          <span className={spinnerClass} aria-hidden="true" />
+                          Joining...
+                        </span>
+                      ) : (
+                        "Join room"
+                      )}
                     </button>
                   </form>
                 </div>

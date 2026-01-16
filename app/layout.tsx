@@ -14,10 +14,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Egg Crate Tracker",
-  description: "Track shared egg trays with real-time updates.",
+  title: "Anda Tacker",
+  description: "Track shared anda trays with real-time updates for roommates.",
   icons: {
-    icon: "/convex.svg",
+    icon: "/logo.svg",
   },
 };
 

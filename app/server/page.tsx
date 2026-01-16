@@ -11,10 +11,9 @@ export default function ServerPage() {
           ← Back to rooms
         </Link>
         <section className={`${cardBaseClass} bg-white`}>
-          <h1 className="text-3xl font-semibold">Egg Crate Tracker</h1>
+          <h1 className="text-3xl font-semibold">Anda Tacker</h1>
           <p className="text-sm text-slate-600">
-            The tray experience lives in the client routes for real-time
-            updates.
+            Real-time anda drama client routes me hai. Yahan sirf shanti hai.
           </p>
         </section>
       </div>
